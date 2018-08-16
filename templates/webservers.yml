@@ -18,3 +18,61 @@ Resources:
       Tags:
         - Key: Name
           Value: webservers_vpc
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: webservers_internet_gateway
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: "us-west-2a"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: public_subnet_a
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: "us-west-2b"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: public_subnet_b
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value: public_route_table
+
+  PublicDefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
