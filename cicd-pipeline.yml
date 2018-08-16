@@ -143,3 +143,6 @@ Resources:
     Type: AWS::CodeCommit::Repository
     Properties:
       RepositoryName: onica
+
+  ArtifactStoreBucket:
+    Type: AWS::S3::Bucket
