@@ -1,2 +1,14 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Simple web site, load balanced, scalable, highly available"
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: webservers_vpc
