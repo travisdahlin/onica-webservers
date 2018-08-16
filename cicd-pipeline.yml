@@ -15,6 +15,7 @@ Resources:
             Action:
               - "sts:AssumeRole"
       Path: "/"
+
   CodePipelineServicePolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -111,3 +112,29 @@ Resources:
               - devicefarm:CreateUpload
               - devicefarm:ScheduleRun
             Resource: "*"
+  CloudFormationProvisionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cloudformation.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+
+  CloudFormationProvisionPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: cloudformation-provision-policy
+      Roles:
+        - Ref: CloudFormationProvisionRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "*"
+            Resource: "*"
+            Effect: Allow
