@@ -204,4 +204,16 @@ Resources:
       TopicName: codepipeline-notifications
       Subscription:
         - Protocol: email
-          Endpoint: trdahlin@gmail.com
+          Endpoint: travis.dahlin@protonmail.com
+
+Outputs:
+  HttpURL:
+    Value:
+      Fn::GetAtt:
+        - OnicaCodeCommit
+        - CloneUrlHttp
+  SSHURL:
+    Value:
+      Fn::GetAtt:
+        - OnicaCodeCommit
+        - CloneUrlSsh
