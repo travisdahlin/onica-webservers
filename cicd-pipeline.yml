@@ -138,3 +138,8 @@ Resources:
           - Action: "*"
             Resource: "*"
             Effect: Allow
+
+  OnicaCodeCommit:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: onica
