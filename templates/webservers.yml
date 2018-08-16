@@ -106,3 +106,27 @@ Resources:
         Fn::GetAtt:
           - EIP
           - AllocationId
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: "us-west-2a"
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: private_subnet_a
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: "us-west-2b"
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: private_subnet_b
