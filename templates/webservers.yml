@@ -18,3 +18,10 @@ Resources:
       Tags:
         - Key: Name
           Value: webservers_vpc
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: webservers_internet_gateway
