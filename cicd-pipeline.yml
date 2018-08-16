@@ -206,6 +206,20 @@ Resources:
         - Protocol: email
           Endpoint: travis.dahlin@protonmail.com
 
+  CodePipelineEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.codepipeline
+        detail-type:
+          - CodePipeline Pipeline Execution State Change
+      State: ENABLED
+      Targets:
+        - Arn:
+            Ref: CodePipelineSNSTopic
+          Id: OpsTopic
+
 Outputs:
   HttpURL:
     Value:
