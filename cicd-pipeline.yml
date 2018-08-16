@@ -197,3 +197,11 @@ Resources:
                     - CloudFormationProvisionRole
                     - Arn
               RunOrder: 1
+
+  CodePipelineSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: codepipeline-notifications
+      Subscription:
+        - Protocol: email
+          Endpoint: trdahlin@gmail.com
