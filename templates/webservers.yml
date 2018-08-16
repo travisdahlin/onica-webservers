@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "Simple web site, load balanced, scalable, highly available"
 
+Parameters:
+  KeyName:
+    Description: Name of SSH Keypair
+    Type: "AWS::EC2::KeyPair::KeyName"
+    ConstraintDescription: Must be an existing SSH keypair
+
 Resources:
   VPC:
     Type: AWS::EC2::VPC
