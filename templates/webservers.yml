@@ -266,3 +266,30 @@ Resources:
                   </body>
                 </html>" > /var/www/html/index.html
           sudo service httpd start
+
+  WebServerGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones:
+        - "us-west-2a"
+        - "us-west-2b"
+      VPCZoneIdentifier:
+        - Ref: PublicSubnet1
+        - Ref: PublicSubnet2
+      LaunchConfigurationName:
+        Ref: "WebServerLaunchConfig"
+      MinSize: "2"
+      MaxSize: "4"
+      DesiredCapacity: "2"
+      TargetGroupARNs:
+        - Ref: "ALBTargetGroup"
+      Cooldown: "120"
+      MetricsCollection:
+        - Granularity: "1Minute"
+          Metrics:
+            - "GroupMinSize"
+            - "GroupMaxSize"
+            - "GroupDesiredCapacity"
+            - "GroupInServiceInstances"
+            - "GroupTotalInstances"
+    DependsOn: PublicDefaultRoute
