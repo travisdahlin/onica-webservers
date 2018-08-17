@@ -293,3 +293,15 @@ Resources:
             - "GroupInServiceInstances"
             - "GroupTotalInstances"
     DependsOn: PublicDefaultRoute
+
+  WebServerScalingPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName:
+        Ref: WebServerGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 25
+      Cooldown: "120"
