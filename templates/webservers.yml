@@ -305,3 +305,14 @@ Resources:
           PredefinedMetricType: ASGAverageCPUUtilization
         TargetValue: 25
       Cooldown: "120"
+
+Outputs:
+  URL:
+    Value:
+      Fn::Join:
+        - ""
+        - - http://
+          - Fn::GetAtt:
+              - ApplicationLoadBalancer
+              - DNSName
+    Description: Application URL
