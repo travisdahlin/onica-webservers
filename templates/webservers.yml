@@ -232,3 +232,37 @@ Resources:
           FromPort: 22
           ToPort: 22
           CidrIp: 68.5.115.159/32
+
+  WebServerLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0ad99772
+      KeyName:
+        Ref: KeyName
+      AssociatePublicIpAddress: true
+      SecurityGroups:
+        - Ref: WebServerSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -ex
+          sudo yum update -y
+          sudo yum install stress httpd -y
+          publichost=$(curl http://169.254.169.254/latest/meta-data/public-hostname)
+          localhost=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
+          host=$(hostname)
+          echo "<html>
+                  <head>
+                    <title>Onica Test</title>
+                  </head>
+                  <body>
+                    <h3>Hello, world!</h3>
+                    <br />
+                    <p>
+                      My name is <strong>$publichost</strong>, my friends 
+                      call me <strong>$localhost</strong>, but you can call 
+                      me <strong>$host</strong>
+                    </p>
+                  </body>
+                </html>" > /var/www/html/index.html
+          sudo service httpd start
