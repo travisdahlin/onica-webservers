@@ -165,3 +165,154 @@ Resources:
         Ref: PrivateSubnet2
       RouteTableId:
         Ref: PrivateRouteTable
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: alb_security_group
+      GroupDescription: Allow http access to alb on 80
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 60
+      UnhealthyThresholdCount: 10
+      HealthCheckPath: /
+      Port: 80
+      Protocol: HTTP
+      VpcId:
+        Ref: VPC
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: "60"
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      Subnets:
+        - Ref: PublicSubnet1
+        - Ref: PublicSubnet2
+      SecurityGroups:
+        - Ref: ALBSecurityGroup
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: ALBTargetGroup
+      LoadBalancerArn:
+        Ref: ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: web_server_security_group
+      GroupDescription: Allow http access to webservers on 80
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId:
+            Ref: ALBSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 68.5.115.159/32
+
+  WebServerLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0ad99772
+      KeyName:
+        Ref: KeyName
+      AssociatePublicIpAddress: true
+      SecurityGroups:
+        - Ref: WebServerSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -ex
+          sudo yum update -y
+          sudo yum install stress httpd -y
+          publichost=$(curl http://169.254.169.254/latest/meta-data/public-hostname)
+          localhost=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
+          host=$(hostname)
+          echo "<html>
+                  <head>
+                    <title>Onica Test</title>
+                  </head>
+                  <body>
+                    <h3>Hello, world!</h3>
+                    <br />
+                    <p>
+                      My name is <strong>$publichost</strong>, my friends 
+                      call me <strong>$localhost</strong>, but you can call 
+                      me <strong>$host</strong>
+                    </p>
+                  </body>
+                </html>" > /var/www/html/index.html
+          sudo service httpd start
+
+  WebServerGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones:
+        - "us-west-2a"
+        - "us-west-2b"
+      VPCZoneIdentifier:
+        - Ref: PublicSubnet1
+        - Ref: PublicSubnet2
+      LaunchConfigurationName:
+        Ref: "WebServerLaunchConfig"
+      MinSize: "2"
+      MaxSize: "4"
+      DesiredCapacity: "2"
+      TargetGroupARNs:
+        - Ref: "ALBTargetGroup"
+      Cooldown: "120"
+      MetricsCollection:
+        - Granularity: "1Minute"
+          Metrics:
+            - "GroupMinSize"
+            - "GroupMaxSize"
+            - "GroupDesiredCapacity"
+            - "GroupInServiceInstances"
+            - "GroupTotalInstances"
+    DependsOn: PublicDefaultRoute
+
+  WebServerScalingPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName:
+        Ref: WebServerGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: 25
+      Cooldown: "120"
+
+Outputs:
+  URL:
+    Value:
+      Fn::Join:
+        - ""
+        - - http://
+          - Fn::GetAtt:
+              - ApplicationLoadBalancer
+              - DNSName
+    Description: Application URL
