@@ -75,19 +75,17 @@ Resources:
             Action:
               - "sts:AssumeRole"
       Path: "/"
-
-  CloudFormationProvisionPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: cloudformation-provision-policy
-      Roles:
-        - Ref: CloudFormationProvisionRole
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Action: "*"
-            Resource: "*"
-            Effect: Allow
+      Policies:
+        - PolicyName: cloudformation-provision-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Action:
+                  - ec2:*
+                  - elasticloadbalancing:*
+                  - autoscaling:*
+                Resource: "*"
+                Effect: Allow
 
   OnicaCodeCommit:
     Type: AWS::CodeCommit::Repository
